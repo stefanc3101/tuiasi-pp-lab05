@@ -24,10 +24,10 @@ class ConverterWorker(multiprocessing.Process):
             output_queue: Coada în care se scrie rezultatul HTML.
         """
         super().__init__()
-        # TODO: Salvează referințele la cozi
-        raise NotImplementedError("De implementat")
+        self.input_queue = input_queue
+        self.output_queue = output_queue
+        self.converter = TextToHtmlConverter()
 
-    # TODO: Implementează metoda run
     def run(self) -> None:
         """Bucla principală a workerului.
 
@@ -35,4 +35,17 @@ class ConverterWorker(multiprocessing.Process):
         trimite rezultatul în output_queue.
         Workerul se oprește când primește None ca mesaj.
         """
-        raise NotImplementedError("De implementat")
+        # Aceasta bucla ruleaza intr-un proces separat de sistemul de operare
+        while True:
+            # Preluam un mesaj din coada de intrare (blocheaza executia pana cand primeste ceva)
+            text_data = self.input_queue.get()
+
+            # Conditia de oprire a procesului: primirea obiectului None
+            if text_data is None:
+                break
+
+            # Convertim datele folosind clasa noastra
+            html_result = self.converter.convert(text_data)
+
+            # Trimitem rezultatul inapoi prin coada de iesire catre fereastra
+            self.output_queue.put(html_result)
